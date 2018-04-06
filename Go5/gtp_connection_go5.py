@@ -23,4 +23,7 @@ class GtpConnectionGo5(gtp_connection.GtpConnection):
         """
         gtp_connection.GtpConnection.__init__(self, go_engine, board, outfile, debug_mode)
         self.go_engine.con = self
-        self.commands["prior_knowledge"] = self.prior_knowledge
+        self.commands["prior_knowledge"] = self.prior_knowledge_cmd
+
+    def prior_knowledge_cmd(self, args):
+    	
