@@ -5,7 +5,7 @@ sys.path.append(utilpath)
 utilpath = sys.path[0] + "/../Go4/"
 sys.path.append(utilpath)
 
-from gtp_connection import GtpConnection  
+from gtp_connection_go5 import GtpConnectionGo5
 from board_util_go4 import GoBoardUtilGo4
 from simple_board import SimpleGoBoard
 from mcts import MCTS
@@ -108,7 +108,7 @@ def run():
     start the gtp connection and wait for commands.
     """
     board = SimpleGoBoard(7)
-    con = GtpConnection(Go5Player(num_simulation), board)
+    con = GtpConnectionGo5(Go5Player(num_simulation), board)
     con.start_connection()
 
 if __name__=='__main__':

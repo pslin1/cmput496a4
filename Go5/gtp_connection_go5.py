@@ -2,6 +2,7 @@ import traceback
 import sys
 import os
 from board_util import GoBoardUtil, BLACK, WHITE, EMPTY, BORDER, FLOODFILL
+from board_util_go5 import GoBoardUtilGo5
 import gtp_connection
 import numpy as np
 import re
@@ -26,4 +27,4 @@ class GtpConnectionGo5(gtp_connection.GtpConnection):
         self.commands["prior_knowledge"] = self.prior_knowledge_cmd
 
     def prior_knowledge_cmd(self, args):
-    	
+    	moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(self.board)
