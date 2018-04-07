@@ -6,6 +6,7 @@ import os, sys
 import numpy as np
 import random
 from board_util_go4 import GoBoardUtilGo4, BLACK, WHITE
+from board_util_go5 import GoBoardUtilGo5
 PASS = 'pass'
 
 def uct_val(node, child, exploration, max_flag): 
@@ -37,14 +38,22 @@ class TreeNode(object):
         """
         Expands tree by creating new children.
         """
-        moves = board.get_empty_points()
-        for move in moves:
-            if move not in self._children:
-                if board.check_legal(move, color) and not board.is_eye(move, color):
-                    self._children[move] = TreeNode(self)
-                    self._children[move]._move = move
+        moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(board)
+        sims_wins_list = GoBoardUtilGo5.find_sim_win_list(moves, probs)
+        empty_moves = board.get_empty_points()
+        for empty_move in empty_moves:
+            if empty_move not in self._children:
+                if board.check_legal(empty_move, color) and not board.is_eye(empty_move, color):
+                    self._children[empty_move] = TreeNode(self)
+                    self._children[empty_move]._move = empty_move
+                    for move in sims_wins_list:
+                        if empty_move == move[0]:
+                            self._children[empty_move]._n_visits = move[3]
+                            self._children[empty_move]._black_wins = move[2]
         self._children[PASS] = TreeNode(self)
         self._children[PASS]._move = PASS
+        self._children[PASS]._black_wins = sims_wins_list[len(sims_wins_list) - 1][2]
+        self._children[PASS]._n_visits= sims_wins_list[len(sims_wins_list) - 1][3]
         self._expanded = True
 
     def select(self, exploration, max_flag):
