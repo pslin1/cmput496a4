@@ -31,5 +31,9 @@ class GtpConnectionGo5(gtp_connection.GtpConnection):
     	moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(self.board)
     	sims_wins_list = GoBoardUtilGo5.find_sim_win_list(moves, probs)
     	#sorts in descending order of winrate, then ascending order of alphanumeric position
-    	sorted_list = sorted(sims_wins_list, key=lambda element: (-element[1], element[0]))
-    	
+    	sorted_list = GoBoardUtilGo5.format_list(self.board, sims_wins_list)
+    	response = ""
+    	for item in sorted_list:
+    		response = response + str(item[0]) + " " + str(item[2]) + " " + str(item[3]) + " "
+
+    	self.respond(response)

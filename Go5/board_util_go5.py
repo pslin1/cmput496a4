@@ -51,7 +51,7 @@ class GoBoardUtilGo5(GoBoardUtil):
                 wins = sims * winrate
                 sims = int(round(sims))
                 wins = int(round(wins))
-                sims_wins_list.append([m, winrate, sims, wins])
+                sims_wins_list.append([m, winrate, wins, sims])
             else:
                 sims = 10 * probs[m] / max_p
                 #No formula explicitly given for winrate, this formula is based off example on assignment page
@@ -60,5 +60,18 @@ class GoBoardUtilGo5(GoBoardUtil):
                 wins = sims * winrate
                 sims = int(round(sims))
                 wins = int(round(wins))
-                sims_wins_list.append([m, winrate, sims, wins])
+                sims_wins_list.append([m, winrate, wins, sims])
         return sims_wins_list
+
+    @staticmethod
+    def format_list(board, sims_wins_list):
+        for item in sims_wins_list:
+            if item[0] == "PASS":
+                item[0] = "Pass"
+            else:
+                row, col = board._point_to_coord(item[0])
+                move = GoBoardUtil.format_point((row, col))
+                item[0] = move
+        sorted_list = sorted(sims_wins_list, key=lambda element: (-element[1], element[0]))
+        return sorted_list
+
