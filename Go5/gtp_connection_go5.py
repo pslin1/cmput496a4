@@ -6,6 +6,7 @@ from board_util_go5 import GoBoardUtilGo5
 import gtp_connection
 import numpy as np
 import re
+import operator
 
 class GtpConnectionGo5(gtp_connection.GtpConnection):
 
@@ -28,5 +29,7 @@ class GtpConnectionGo5(gtp_connection.GtpConnection):
 
     def prior_knowledge_cmd(self, args):
     	moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(self.board)
-    	sims_wins_dict = GoBoardUtilGo5.find_sim_win_dict(moves, probs)
-    	print(sims_wins_dict)
+    	sims_wins_list = GoBoardUtilGo5.find_sim_win_list(moves, probs)
+    	#sorts in descending order of winrate, then ascending order of alphanumeric position
+    	sorted_list = sorted(sims_wins_list, key=lambda element: (-element[1], element[0]))
+    	

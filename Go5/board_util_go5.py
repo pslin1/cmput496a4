@@ -36,12 +36,12 @@ class GoBoardUtilGo5(GoBoardUtil):
 
         return moves, probs
 
-    #Takes moves and probs arrays from generate_moves_with_feature_based_probs_Go5 and returns dict with
-    #the move (as a point) as the key and an array of the form [winrate, sims(rounded), wins(rounded)] as the value
+    #Takes moves and probs arrays from generate_moves_with_feature_based_probs_Go5 and returns array
+    #of the form [move(as a point), winrate, sims(rounded), wins(rounded)]
     @staticmethod
-    def find_sim_win_dict(moves, probs):
+    def find_sim_win_list(moves, probs):
         max_p = max(probs)
-        sims_wins_dict = dict()
+        sims_wins_list = []
         for m in moves:
             if m == "PASS":
                 sims = 10 * probs[len(probs) - 1] / max_p
@@ -49,7 +49,9 @@ class GoBoardUtilGo5(GoBoardUtil):
                 winrate = sims * 0.05
                 winrate = winrate + 0.5
                 wins = sims * winrate
-                sims_wins_dict[m] = [winrate, sims, wins]
+                sims = int(round(sims))
+                wins = int(round(wins))
+                sims_wins_list.append([m, winrate, sims, wins])
             else:
                 sims = 10 * probs[m] / max_p
                 #No formula explicitly given for winrate, this formula is based off example on assignment page
@@ -58,5 +60,5 @@ class GoBoardUtilGo5(GoBoardUtil):
                 wins = sims * winrate
                 sims = int(round(sims))
                 wins = int(round(wins))
-                sims_wins_dict[m] = [winrate, sims, wins]
-        return sims_wins_dict
+                sims_wins_list.append([m, winrate, sims, wins])
+        return sims_wins_list
