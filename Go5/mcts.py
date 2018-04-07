@@ -34,27 +34,38 @@ class TreeNode(object):
         self._expanded = False
         self._move = None
 
-    def expand(self, board, color):
+    def expand(self, board, color, in_tree_knowledge):
         """
         Expands tree by creating new children.
         """
-        moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(board)
-        sims_wins_list = GoBoardUtilGo5.find_sim_win_list(moves, probs)
-        empty_moves = board.get_empty_points()
-        for empty_move in empty_moves:
-            if empty_move not in self._children:
-                if board.check_legal(empty_move, color) and not board.is_eye(empty_move, color):
-                    self._children[empty_move] = TreeNode(self)
-                    self._children[empty_move]._move = empty_move
-                    for move in sims_wins_list:
-                        if empty_move == move[0]:
-                            self._children[empty_move]._n_visits = move[3]
-                            self._children[empty_move]._black_wins = move[2]
-        self._children[PASS] = TreeNode(self)
-        self._children[PASS]._move = PASS
-        self._children[PASS]._black_wins = sims_wins_list[len(sims_wins_list) - 1][2]
-        self._children[PASS]._n_visits= sims_wins_list[len(sims_wins_list) - 1][3]
-        self._expanded = True
+        if in_tree_knowledge == 'probabilistic':
+            moves, probs = GoBoardUtilGo5.generate_moves_with_feature_based_probs_Go5(board)
+            sims_wins_list = GoBoardUtilGo5.find_sim_win_list(moves, probs)
+            empty_moves = board.get_empty_points()
+            for empty_move in empty_moves:
+                if empty_move not in self._children:
+                    if board.check_legal(empty_move, color) and not board.is_eye(empty_move, color):
+                        self._children[empty_move] = TreeNode(self)
+                        self._children[empty_move]._move = empty_move
+                        for move in sims_wins_list:
+                            if empty_move == move[0]:
+                                self._children[empty_move]._n_visits = move[3]
+                                self._children[empty_move]._black_wins = move[2]
+            self._children[PASS] = TreeNode(self)
+            self._children[PASS]._move = PASS
+            self._children[PASS]._black_wins = sims_wins_list[len(sims_wins_list) - 1][2]
+            self._children[PASS]._n_visits= sims_wins_list[len(sims_wins_list) - 1][3]
+            self._expanded = True
+        else:
+            moves = board.get_empty_points()
+            for move in moves:
+                if move not in self._children:
+                    if board.check_legal(move, color) and not board.is_eye(move, color):
+                        self._children[move] = TreeNode(self)
+                        self._children[move]._move = move
+            self._children[PASS] = TreeNode(self)
+            self._children[PASS]._move = PASS
+            self._expanded = True
 
     def select(self, exploration, max_flag):
         """
@@ -107,7 +118,7 @@ class MCTS(object):
     def __init__(self):
         self._root = TreeNode(None)
         self.toplay = BLACK
-    def _playout(self, board, color):
+    def _playout(self, board, color, in_tree_knowledge):
         """
         Run a single playout from the root to the given depth, getting a value at the leaf and
         propagating it back through its parents. State is modified in-place, so a copy must be
@@ -124,7 +135,14 @@ class MCTS(object):
         node = self._root 
         # This will be True only once for the root
         if not node._expanded:
-            node.expand(board, color)
+            node.expand(board, color, in_tree_knowledge)
+            root_black_wins = 0
+            root_n_visits = 0
+            for key, value in node._children.items():
+                root_black_wins += value._black_wins
+                root_n_visits += value._n_visits
+            node._black_wins = root_black_wins
+            node._n_visits = root_n_visits
         while not node.is_leaf():
             # Greedily select next move.                
             max_flag = color == BLACK
@@ -138,7 +156,7 @@ class MCTS(object):
             node = next_node
         assert node.is_leaf()
         if not node._expanded:
-            node.expand(board, color)
+            node.expand(board, color, in_tree_knowledge)
 
         assert board.current_player == color
         leaf_value = self._evaluate_rollout(board, color)  
@@ -190,7 +208,7 @@ class MCTS(object):
         self.in_tree_knowledge = in_tree_knowledge
         for n in range(num_simulation):
             board_copy = board.copy()
-            self._playout(board_copy, toplay)
+            self._playout(board_copy, toplay, in_tree_knowledge)
         # choose a move that has the most visit 
         moves_ls =  [(move, node._n_visits) for move, node in self._root._children.items()]
         if not moves_ls:
